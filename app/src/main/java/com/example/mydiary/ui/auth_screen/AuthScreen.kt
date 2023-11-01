@@ -27,7 +27,9 @@ fun AuthScreen(
     loadingState: Boolean,
     oneTapState: OneTapSignInState,
     messageBarState: MessageBarState,
-    onButtonClicked: () -> Unit
+    onButtonClicked: () -> Unit,
+    onTokenIdReceived: (String) -> Unit,
+    onDialogDismissed: (String) -> Unit
 ) {
 
    val stringResAuthSuccess = stringResource(id = R.string.successfully_authenticated)
@@ -46,12 +48,12 @@ fun AuthScreen(
        clientId = BuildConfig.CLIENT_ID,
        onTokenIdReceived = { tokenId ->
           Log.d("Auth", "AuthScreen: $tokenId")
-          messageBarState.addSuccess(stringResAuthSuccess)
+          onTokenIdReceived(tokenId)
 
        },
        onDialogDismissed = { message ->
           Log.d("Auth", "AuthScreen: $message")
-          messageBarState.addError(Exception(message))
+          onDialogDismissed(message)
        }
    )
 }
