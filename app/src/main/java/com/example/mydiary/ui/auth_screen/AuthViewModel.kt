@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import io.realm.kotlin.mongodb.App
 import io.realm.kotlin.mongodb.Credentials
 import io.realm.kotlin.mongodb.GoogleAuthType
+import kotlinx.coroutines.delay
 
 /**
  * @author : Mingaleev D
@@ -19,6 +20,8 @@ import io.realm.kotlin.mongodb.GoogleAuthType
 class AuthViewModel : ViewModel() {
 
    var loadingState = mutableStateOf(false)
+      private set
+   var authenticated = mutableStateOf(false)
       private set
 
    fun setLoading(loading: Boolean) {
@@ -35,12 +38,14 @@ class AuthViewModel : ViewModel() {
          try {
             val result = withContext(Dispatchers.IO) {
                App.create(BuildConfig.APP_ID).login(
-                   Credentials.jwt(tokenId)
-                  // Credentials.google(tokenId, GoogleAuthType.ID_TOKEN)
+                  // Credentials.jwt(tokenId)
+                   Credentials.google(tokenId, GoogleAuthType.ID_TOKEN)
                ).loggedIn
             }
             withContext(Dispatchers.Main) {
                onSuccess(result)
+               delay(600)
+               authenticated.value = true
             }
          } catch (e: Exception) {
             withContext(Dispatchers.Main) {

@@ -14,6 +14,7 @@ import com.example.mydiary.R
 import com.example.mydiary.common.Constants.WRITE_SCREE_ARGUMENT_KEY
 import com.example.mydiary.ui.auth_screen.AuthScreen
 import com.example.mydiary.ui.auth_screen.AuthViewModel
+import com.example.mydiary.ui.home_screen.HomeScreen
 import com.stevdzasan.messagebar.rememberMessageBarState
 import com.stevdzasan.onetap.rememberOneTapSignInState
 
@@ -29,21 +30,30 @@ fun SetupNavGraph(
 ) {
 
    NavHost(navController = navController, startDestination = startDestination) {
-      authenticationRoute()
-      // homeRoute()
+      authenticationRoute(
+          navigateToHome = {
+             //navController.popBackStack()
+             navController.navigate(Screen.Home.route)
+          }
+      )
+      homeRoute()
       // writeRoute()
    }
 }
 
-fun NavGraphBuilder.authenticationRoute() {
+fun NavGraphBuilder.authenticationRoute(
+    navigateToHome: () -> Unit
+) {
    composable(route = Screen.Authentication.route) {
 
       val viewModel: AuthViewModel = viewModel()
+      val authenticated by viewModel.authenticated
       val loadingState by viewModel.loadingState
       val oneTapState = rememberOneTapSignInState()
       val messageBarState = rememberMessageBarState()
 
       AuthScreen(
+          authenticated = authenticated,
           loadingState = loadingState,
           oneTapState = oneTapState,
           messageBarState = messageBarState,
@@ -56,7 +66,7 @@ fun NavGraphBuilder.authenticationRoute() {
              viewModel.signInWithMongoAtlas(
                  tokenId = tokenId,
                  onSuccess = {
-                    if(it){
+                    if (it) {
                        messageBarState.addSuccess("successfully_authenticated")
                        viewModel.setLoading(false)
                     }
@@ -69,14 +79,16 @@ fun NavGraphBuilder.authenticationRoute() {
           },
           onDialogDismissed = { message ->
              messageBarState.addError(Exception(message))
-          }
+             viewModel.setLoading(false)
+          },
+          navigateToHome = navigateToHome
       )
    }
 }
 
 fun NavGraphBuilder.homeRoute() {
    composable(route = Screen.Home.route) {
-      // todo homeScreen
+      HomeScreen()
    }
 }
 
